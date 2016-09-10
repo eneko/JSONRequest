@@ -74,8 +74,17 @@ open class JSONRequest {
 
     open static var log: ((String) -> Void)?
     open static var userAgent: String?
-    open static var requestTimeout = 5.0
-    open static var resourceTimeout = 10.0
+
+    /**
+     Maximum time in seconds for connection to the server to be established.
+     */
+    open static var requestTimeout = 30.0
+
+    /**
+     Maximum time in seconds for transmission to complete after connection has
+     been established.
+     */
+    open static var resourceTimeout = 30.0
 
     open var httpRequest: NSMutableURLRequest? {
         return request

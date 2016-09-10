@@ -14,8 +14,7 @@ class JSONRequestTests: XCTestCase {
     func testHTTPRequest() {
         let jsonRequest = JSONRequest()
         jsonRequest.updateRequest(method: .GET, url: "")
-        XCTAssertNotNil(jsonRequest.request)
-        XCTAssertEqual(jsonRequest.request?.httpMethod, "GET")
+        XCTAssertEqual(jsonRequest.httpRequest.httpMethod, "GET")
     }
 
     func testCreateBadURL() {
@@ -168,7 +167,7 @@ class JSONRequestTests: XCTestCase {
         let payload = ["Hello": "world"]
         let request = JSONRequest()
         request.updateRequest(payload: payload)
-        XCTAssertNotNil(request.httpRequest?.httpBody)
+        XCTAssertNotNil(request.httpRequest.httpBody)
     }
 
 //    func testInvalidPayload() {
@@ -187,7 +186,7 @@ class JSONRequestTests: XCTestCase {
         let headers: JSONObject = ["User-Agent": "XCTest"]
         let request = JSONRequest()
         request.updateRequest(headers: headers)
-        XCTAssertEqual(request.httpRequest?.allHTTPHeaderFields?["User-Agent"], "XCTest")
+        XCTAssertEqual(request.httpRequest.allHTTPHeaderFields?["User-Agent"], "XCTest")
     }
 
 //    fileprivate func binaryData() -> Data {

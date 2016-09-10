@@ -70,9 +70,9 @@ public extension JSONResult {
 
 open class JSONRequest {
 
-    fileprivate(set) var request: NSMutableURLRequest?
-
-    open static var log: ((String) -> Void)?
+    /**
+     User Agent configuration for all requests
+     */
     open static var userAgent: String?
 
     /**
@@ -86,15 +86,20 @@ open class JSONRequest {
      */
     open static var resourceTimeout = 30.0
 
-    open var httpRequest: NSMutableURLRequest? {
-        return request
-    }
+    /**
+     Debug log configuration callback for tracing request information
+     */
+    open static var log: ((String) -> Void)?
+
+
+    open var httpRequest: NSMutableURLRequest
+    open var httpResponse: HTTPURLResponse?
 
     public init() {
-        request = NSMutableURLRequest()
+        httpRequest = NSMutableURLRequest()
     }
 
-    // MARK: Non-public business logic (testable but not public outside the module)
+    // MARK: Business logic
 
     func submitAsyncRequest(method: JSONRequestHttpVerb, url: String,
                             queryParams: JSONObject? = nil, payload: Any? = nil,
@@ -111,10 +116,11 @@ open class JSONRequest {
 
         let start = Date()
         let session = networkSession()
-        let task = session.dataTask(with: request! as URLRequest) { (data, response, error) in
+        let task = session.dataTask(with: httpRequest as URLRequest) { (data, response, error) in
             let elapsed = -start.timeIntervalSinceNow
+            self.httpResponse = response as? HTTPURLResponse
             self.traceResponse(elapsed: elapsed, responseData: data,
-                               httpResponse: response as? HTTPURLResponse,
+                               httpResponse: self.httpResponse,
                                error: error as NSError?)
             if let error = error {
                 let result = JSONResult.failure(error: JSONError.requestFailed(error: error),
@@ -143,36 +149,45 @@ open class JSONRequest {
     func submitSyncRequest(method: JSONRequestHttpVerb, url: String,
                            queryParams: JSONObject? = nil,
                            payload: Any? = nil,
-                           headers: JSONObject? = nil) -> JSONResult {
+                           headers: JSONObject? = nil) throws -> Any? {
 
         let semaphore = DispatchSemaphore(value: 0)
         var requestResult: JSONResult = JSONResult.failure(error: JSONError.unknownError,
                                                            response: nil, body: nil)
+
         submitAsyncRequest(method: method, url: url, queryParams: queryParams,
                            payload: payload, headers: headers) { result in
                             requestResult = result
                             semaphore.signal()
         }
+
         // Wait for the request to complete
         while semaphore.wait(timeout: DispatchTime.now()) == .timedOut {
             let intervalDate = Date(timeIntervalSinceNow: 0.01) // 10 milliseconds
             RunLoop.current.run(mode: RunLoopMode.defaultRunLoopMode, before: intervalDate)
         }
-        return requestResult
+
+        switch requestResult {
+        case .failure(let error, _, _):
+            throw error
+        case .success(let data, _):
+            return data
+        }
     }
 
     func updateRequest(method: JSONRequestHttpVerb, url: String,
                        queryParams: JSONObject? = nil) {
-        request?.url = createURL(urlString: url, queryParams: queryParams)
-        request?.httpMethod = method.rawValue
+        httpRequest.url = createURL(urlString: url, queryParams: queryParams)
+        httpRequest.httpMethod = method.rawValue
     }
 
     func updateRequest(headers: JSONObject?) {
-        request?.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request?.setValue("application/json", forHTTPHeaderField: "Accept")
+        httpRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        httpRequest.setValue("application/json", forHTTPHeaderField: "Accept")
         if let headers = headers {
             for (headerName, headerValue) in headers {
-                request?.setValue(String(describing: headerValue), forHTTPHeaderField: headerName)
+                httpRequest.setValue(String(describing: headerValue),
+                                     forHTTPHeaderField: headerName)
             }
         }
     }
@@ -181,7 +196,7 @@ open class JSONRequest {
         guard let payload = payload else {
             return
         }
-        request?.httpBody = objectToJSON(object: payload)
+        httpRequest.httpBody = objectToJSON(object: payload)
     }
 
     func createURL(urlString: String, queryParams: JSONObject?) -> URL? {

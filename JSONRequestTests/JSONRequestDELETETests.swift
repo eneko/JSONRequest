@@ -15,43 +15,31 @@ class JSONRequestDELETETests: XCTestCase {
     let badUrl = "httpppp://httpbin.org/delete"
     let params: JSONObject = ["hello": "world"]
 
-    func testSimple() {
-        let result = JSONRequest.delete(url: goodUrl, queryParams: params)
-        switch result {
-        case .success(let data, let response):
-            XCTAssertNotNil(data)
-            let object = data as? JSONObject
-            XCTAssertNotNil(object?["args"])
-            XCTAssertEqual((object?["args"] as? JSONObject)?["hello"] as? String, "world")
-            XCTAssertEqual(response.statusCode, 200)
-        case .failure:
-            XCTFail("Request failed")
-        }
+    func testSimple() throws {
+        let request = JSONRequest()
+        let data = try request.delete(url: goodUrl, queryParams: params)
+        XCTAssertNotNil(data)
+        let object = data as? JSONObject
+        XCTAssertNotNil(object?["args"])
+        XCTAssertEqual((object?["args"] as? JSONObject)?["hello"] as? String, "world")
+        XCTAssertEqual(request.httpResponse?.statusCode, 200)
     }
 
-    func testDictionaryValue() {
-        let result = JSONRequest.delete(url: goodUrl, queryParams: params)
-        let dict = result.dictionaryValue
-        XCTAssertEqual((dict["args"] as? JSONObject)?["hello"] as? String, "world")
+    func testDictionaryValue() throws {
+        let result = try JSONRequest.delete(url: goodUrl, queryParams: params)
+        let dict = result as? [String: Any]
+        XCTAssertEqual((dict?["args"] as? JSONObject)?["hello"] as? String, "world")
     }
 
-    func testArrayValue() {
-        let result = JSONRequest.delete(url: goodUrl, queryParams: params)
-        let array = result.arrayValue
-        XCTAssertEqual(array.count, 0)
+    func testArrayValue() throws {
+        let result = try JSONRequest.delete(url: goodUrl, queryParams: params)
+        let array = result as? [Any]
+        XCTAssertEqual(array?.count, 0)
     }
 
-    func testFailing() {
-        let result = JSONRequest.delete(url: badUrl, queryParams: params)
-        switch result {
-        case .success:
-            XCTFail("Request should have failed")
-        case .failure(let error, let response, let body):
-            XCTAssertNotNil(error)
-            XCTAssertNil(response)
-            XCTAssertNil(body)
-//            XCTAssertEqual(error, JSONError.requestFailed)
-        }
+    func testFailing() throws {
+        let result = try? JSONRequest.delete(url: badUrl, queryParams: params)
+        XCTAssertNil(result)
     }
 
     func testAsync() {

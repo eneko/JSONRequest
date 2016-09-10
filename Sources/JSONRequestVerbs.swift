@@ -20,16 +20,14 @@ public enum JSONRequestHttpVerb: String {
 public extension JSONRequest {
 
     public func send(method: JSONRequestHttpVerb, url: String, queryParams: JSONObject? = nil,
-                     payload: Any? = nil, headers: JSONObject? = nil) -> JSONResult {
-
-        return submitSyncRequest(method: method, url: url, queryParams: queryParams,
-                                 payload: payload, headers: headers)
+                     payload: Any? = nil, headers: JSONObject? = nil) throws -> Any? {
+        return try submitSyncRequest(method: method, url: url, queryParams: queryParams,
+                                     payload: payload, headers: headers)
     }
 
     public func send(method: JSONRequestHttpVerb, url: String, queryParams: JSONObject? = nil,
                      payload: Any? = nil, headers: JSONObject? = nil,
                      complete: @escaping (JSONResult) -> Void) {
-
         submitAsyncRequest(method: method, url: url, queryParams: queryParams, payload: payload,
                            headers: headers, complete: complete)
     }
@@ -41,31 +39,31 @@ public extension JSONRequest {
 public extension JSONRequest {
 
     public func get(url: String, queryParams: JSONObject? = nil,
-                    headers: JSONObject? = nil) -> JSONResult {
-        return send(method: .GET, url: url, queryParams: queryParams, headers: headers)
+                    headers: JSONObject? = nil) throws -> Any? {
+        return try send(method: .GET, url: url, queryParams: queryParams, headers: headers)
     }
 
     public func post(url: String, queryParams: JSONObject? = nil, payload: Any? = nil,
-                     headers: JSONObject? = nil) -> JSONResult {
-        return send(method: .POST, url: url, queryParams: queryParams, payload: payload,
-                    headers: headers)
+                     headers: JSONObject? = nil) throws -> Any? {
+        return try send(method: .POST, url: url, queryParams: queryParams, payload: payload,
+                        headers: headers)
     }
 
     public func put(url: String, queryParams: JSONObject? = nil, payload: Any? = nil,
-                    headers: JSONObject? = nil) -> JSONResult {
-        return send(method: .PUT, url: url, queryParams: queryParams, payload: payload,
-                    headers: headers)
+                    headers: JSONObject? = nil) throws -> Any? {
+        return try send(method: .PUT, url: url, queryParams: queryParams, payload: payload,
+                        headers: headers)
     }
 
     public func patch(url: String, queryParams: JSONObject? = nil, payload: Any? = nil,
-                      headers: JSONObject? = nil) -> JSONResult {
-        return send(method: .PATCH, url: url, queryParams: queryParams, payload: payload,
-                    headers: headers)
+                      headers: JSONObject? = nil) throws -> Any? {
+        return try send(method: .PATCH, url: url, queryParams: queryParams, payload: payload,
+                        headers: headers)
     }
 
     public func delete(url: String, queryParams: JSONObject? = nil,
-                       headers: JSONObject? = nil) -> JSONResult {
-        return send(method: .DELETE, url: url, queryParams: queryParams, headers: headers)
+                       headers: JSONObject? = nil) throws -> Any? {
+        return try send(method: .DELETE, url: url, queryParams: queryParams, headers: headers)
     }
 
 }
@@ -113,31 +111,31 @@ public extension JSONRequest {
 public extension JSONRequest {
 
     public class func get(url: String, queryParams: JSONObject? = nil,
-                          headers: JSONObject? = nil) -> JSONResult {
-        return JSONRequest().get(url: url, queryParams: queryParams, headers: headers)
+                          headers: JSONObject? = nil) throws -> Any? {
+        return try JSONRequest().get(url: url, queryParams: queryParams, headers: headers)
     }
 
     public class func post(url: String, queryParams: JSONObject? = nil, payload: Any? = nil,
-                           headers: JSONObject? = nil) -> JSONResult {
-        return JSONRequest().post(url: url, queryParams: queryParams, payload: payload,
-                                  headers: headers)
+                           headers: JSONObject? = nil) throws -> Any? {
+        return try JSONRequest().post(url: url, queryParams: queryParams, payload: payload,
+                                      headers: headers)
     }
 
     public class func put(url: String, queryParams: JSONObject? = nil, payload: Any? = nil,
-                          headers: JSONObject? = nil) -> JSONResult {
-        return JSONRequest().put(url: url, queryParams: queryParams, payload: payload,
-                                 headers: headers)
+                          headers: JSONObject? = nil) throws -> Any? {
+        return try JSONRequest().put(url: url, queryParams: queryParams, payload: payload,
+                                     headers: headers)
     }
 
     public class func patch(url: String, queryParams: JSONObject? = nil, payload: Any? = nil,
-                            headers: JSONObject? = nil) -> JSONResult {
-        return JSONRequest().patch(url: url, queryParams: queryParams, payload: payload,
-                                   headers: headers)
+                            headers: JSONObject? = nil) throws -> Any? {
+        return try JSONRequest().patch(url: url, queryParams: queryParams, payload: payload,
+                                       headers: headers)
     }
 
     public class func delete(url: String, queryParams: JSONObject? = nil,
-                             headers: JSONObject? = nil) -> JSONResult {
-        return JSONRequest().delete(url: url, queryParams: queryParams, headers: headers)
+                             headers: JSONObject? = nil) throws -> Any? {
+        return try JSONRequest().delete(url: url, queryParams: queryParams, headers: headers)
     }
 
 }
